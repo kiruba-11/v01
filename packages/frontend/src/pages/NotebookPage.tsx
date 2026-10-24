@@ -1,10 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
+import SourceUpload from '../components/SourceUpload';
+import SourceList from '../components/SourceList';
 
 export default function NotebookPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: notebook, isLoading, error } = useQuery({
     queryKey: ['notebook', id],
@@ -13,6 +16,11 @@ export default function NotebookPage() {
       return response.data;
     },
   });
+
+  const handleUploadComplete = () => {
+    // Refresh sources list
+    queryClient.invalidateQueries({ queryKey: ['sources', id] });
+  };
 
   if (error) {
     return (
@@ -33,16 +41,18 @@ export default function NotebookPage() {
 
   return (
     <div className="container">
-      <button onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+      <button onClick={() => navigate('/dashboard')} style={{ marginBottom: '16px' }}>
+        ← Back to Dashboard
+      </button>
       <h1>{notebook?.name}</h1>
       <p>{notebook?.description}</p>
-      <div className="card">
-        <h2>Sources</h2>
-        <p>Source management coming soon...</p>
-      </div>
+
+      <SourceUpload notebookId={id!} onUploadComplete={handleUploadComplete} />
+      <SourceList notebookId={id!} />
+
       <div className="card">
         <h2>Chat</h2>
-        <p>Chat functionality coming soon...</p>
+        <p>Chat functionality coming in Phase 4...</p>
       </div>
     </div>
   );
