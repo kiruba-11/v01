@@ -4,14 +4,29 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { config } from 'dotenv';
+import path from 'path';
+
+// Load environment variables - try multiple paths
+const rootDir = path.resolve(process.cwd(), '../../.env.local');
+const localDir = path.resolve(process.cwd(), '.env.local');
+const defaultEnv = path.resolve(process.cwd(), '../../.env');
+
+console.log('Loading environment from:', rootDir);
+config({ path: rootDir });
+config({ path: localDir });
+config({ path: defaultEnv });
+config();
+
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? '✅ Set' : '❌ Not set');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+
 import { initializeDatabase } from './db/init.js';
 import { createLogger } from './utils/logger.js';
 import authRoutes from './routes/auth.js';
 import notebookRoutes from './routes/notebooks.js';
 import healthRoutes from './routes/health.js';
 import sourcesRoutes from './routes/sources.js';
-
-config();
 
 const logger = createLogger('app');
 const app = express();
