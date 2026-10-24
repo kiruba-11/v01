@@ -60,8 +60,13 @@ async function start() {
     app.listen(port, () => {
       logger.info(`Server running on port ${port}`);
     });
-  } catch (error) {
-    logger.error('Failed to start server', { error });
+  } catch (error: any) {
+    logger.error('Failed to start server', {
+      error: error?.message || String(error),
+      stack: error?.stack,
+      fullError: error
+    });
+    console.error('Full error:', error);
     process.exit(1);
   }
 }
