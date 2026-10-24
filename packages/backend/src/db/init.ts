@@ -124,7 +124,8 @@ async function createInitialSchema(client: any) {
       chunk_index INTEGER NOT NULL,
       content TEXT NOT NULL,
       location_metadata JSONB,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      deleted_at TIMESTAMP
     )
   `);
 

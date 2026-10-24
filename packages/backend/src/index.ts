@@ -9,6 +9,7 @@ import { createLogger } from './utils/logger.js';
 import authRoutes from './routes/auth.js';
 import notebookRoutes from './routes/notebooks.js';
 import healthRoutes from './routes/health.js';
+import sourcesRoutes from './routes/sources.js';
 
 config();
 
@@ -37,6 +38,7 @@ app.use('/api/', limiter);
 app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notebooks', notebookRoutes);
+app.use('/api/notebooks/:notebookId/sources', sourcesRoutes);
 
 // 404 handler
 app.use((req, res) => {
