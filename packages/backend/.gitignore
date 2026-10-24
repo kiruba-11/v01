@@ -1,0 +1,5 @@
+tsconfig.json
+dist/
+src/**/*.test.ts
+.env
+.env.local

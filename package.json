@@ -1,0 +1,37 @@
+{
+  "name": "sourcepilot",
+  "version": "0.1.0",
+  "description": "AI-powered research and knowledge intelligence platform",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.11.0"
+  },
+  "packageManager": "npm@10.9.0",
+  "workspaces": [
+    "packages/backend",
+    "packages/frontend",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "dev:backend": "npm run dev -w packages/backend",
+    "dev:frontend": "npm run dev -w packages/frontend",
+    "build": "npm run build --workspaces --if-present",
+    "build:backend": "npm run build -w packages/backend",
+    "build:frontend": "npm run build -w packages/frontend",
+    "start": "npm run start -w packages/backend",
+    "test": "npm run test --workspaces --if-present",
+    "test:local": "npm run test --workspaces --if-present",
+    "test:focused": "npm run test:focused --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "db:migrate": "npm run db:migrate -w packages/backend",
+    "db:seed": "npm run db:seed -w packages/backend",
+    "check:fast": "npm run type-check && npm run lint",
+    "check:pr": "npm run check:fast && npm run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
