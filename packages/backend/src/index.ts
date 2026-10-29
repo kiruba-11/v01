@@ -27,6 +27,8 @@ import authRoutes from './routes/auth.js';
 import notebookRoutes from './routes/notebooks.js';
 import healthRoutes from './routes/health.js';
 import sourcesRoutes from './routes/sources.js';
+import chatRoutes from './routes/chat.js';
+import studioRoutes from './routes/studio.js';
 
 const logger = createLogger('app');
 const app = express();
@@ -54,6 +56,8 @@ app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/notebooks', notebookRoutes);
 app.use('/api/notebooks/:notebookId/sources', sourcesRoutes);
+app.use('/api/notebooks/:notebookId/chat', chatRoutes);
+app.use('/api/notebooks/:notebookId/studio', studioRoutes);
 
 // 404 handler
 app.use((req, res) => {

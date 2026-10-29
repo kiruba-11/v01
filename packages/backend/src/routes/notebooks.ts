@@ -37,6 +37,7 @@ router.get('/', authenticateToken, async (req: Request, res: Response) => {
 
 router.post('/', authenticateToken, async (req: Request, res: Response) => {
   try {
+    logger.info('Create notebook request received', { body: req.body, userId: (req as any).userId });
     const data = createNotebookSchema.parse(req.body);
     const userId = (req as any).userId;
     const pool = getPool();
@@ -49,12 +50,13 @@ router.post('/', authenticateToken, async (req: Request, res: Response) => {
         [notebookId, userId, data.name, data.description || '']
       );
 
+      logger.info('Notebook created successfully', { notebookId });
       res.status(201).json(result.rows[0]);
     } finally {
       client.release();
     }
   } catch (error: any) {
-    logger.error('Failed to create notebook', { error: error.message });
+    logger.error('Failed to create notebook - error details:', { error: error.message, stack: error.stack, body: req.body });
     res.status(400).json({ error: error.message || 'Failed to create notebook' });
   }
 });

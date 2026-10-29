@@ -1,0 +1,38 @@
+/* Paint Brush Button */
+.paint-brush-button {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #70b7ff 0%, #3b9eff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 158, 255, 0.25);
+}
+
+.paint-brush-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 158, 255, 0.35);
+  filter: brightness(1.05);
+}
+
+.paint-brush-button:active {
+  transform: translateY(0);
+}
+
+.paint-brush-button:focus-visible {
+  outline: 2px solid var(--text-primary, #ffffff);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paint-brush-button {
+    transition: none;
+  }
+}

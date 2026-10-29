@@ -56,14 +56,29 @@ async function runMigrations() {
     // List of migrations to run
     const migrations = [
       { name: '001_initial_schema', fn: createInitialSchema },
+      { name: '002_vector_search', fn: createVectorSchema },
+      { name: '003_add_chunk_deleted_at', fn: addChunkDeletedAtColumn },
+      { name: '004_add_source_language', fn: addSourceLanguageColumns },
+      { name: '005_add_source_metadata', fn: addSourceMetadataColumns },
     ];
 
     for (const migration of migrations) {
       if (!executedMigrations.has(migration.name)) {
         logger.info(`Running migration: ${migration.name}`);
-        await migration.fn(client);
-        await client.query('INSERT INTO migrations (name) VALUES ($1)', [migration.name]);
-        logger.info(`Completed migration: ${migration.name}`);
+        try {
+          await migration.fn(client);
+          await client.query('INSERT INTO migrations (name) VALUES ($1)', [migration.name]);
+          logger.info(`Completed migration: ${migration.name}`);
+        } catch (migError: any) {
+          logger.warn(`Migration ${migration.name} note: ${migError.message}`);
+          // If vector extension isn't installed in postgres container yet, log and continue gracefully
+          if (migration.name === '002_vector_search') {
+            logger.warn('pgvector extension may not be installed in PostgreSQL; vector search will operate in fallback mode.');
+            await client.query('INSERT INTO migrations (name) VALUES ($1)', [migration.name]);
+          } else {
+            throw migError;
+          }
+        }
       }
     }
   } finally {
@@ -160,4 +175,30 @@ async function createInitialSchema(client: any) {
   await client.query('CREATE INDEX IF NOT EXISTS idx_conversations_notebook ON conversations(notebook_id)');
   await client.query('CREATE INDEX IF NOT EXISTS idx_conversations_user ON conversations(user_id)');
   await client.query('CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id)');
+}
+
+async function createVectorSchema(client: any) {
+  await client.query('CREATE EXTENSION IF NOT EXISTS vector');
+  await client.query('ALTER TABLE source_chunks ADD COLUMN IF NOT EXISTS embedding vector(1536)');
+}
+
+async function addChunkDeletedAtColumn(client: any) {
+  await client.query('ALTER TABLE source_chunks ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP');
+}
+
+async function addSourceLanguageColumns(client: any) {
+  await client.query(`
+    ALTER TABLE sources
+    ADD COLUMN IF NOT EXISTS language VARCHAR(50) DEFAULT 'auto',
+    ADD COLUMN IF NOT EXISTS detected_language VARCHAR(50)
+  `);
+}
+
+async function addSourceMetadataColumns(client: any) {
+  await client.query(`
+    ALTER TABLE sources
+    ADD COLUMN IF NOT EXISTS source_status VARCHAR(50) DEFAULT 'completed',
+    ADD COLUMN IF NOT EXISTS status_reason TEXT,
+    ADD COLUMN IF NOT EXISTS metadata_json JSONB
+  `);
 }
