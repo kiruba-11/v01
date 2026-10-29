@@ -14,6 +14,20 @@ export interface AIProviderConfig {
   * Supports OmniRoute, Nvidia, Anthropic (Claude), Ollama, OpenAI, DeepSeek, Google (Gemini), Groq, Together, etc.
   */
 export function getAIProviderConfig(purpose: 'chat' | 'embedding' | 'vision' = 'chat'): AIProviderConfig {
+  // 0. Check AI_PROVIDER explicitly or Ollama override
+  const envProvider = (process.env.AI_PROVIDER || '').toLowerCase();
+  const checkOmniKey = process.env.OMNIROUTE_API_KEY || process.env.OMNI_API_KEY;
+
+  if (envProvider === 'ollama' || (process.env.OLLAMA_BASE_URL && (!checkOmniKey || checkOmniKey.trim() === ''))) {
+    const modelName = process.env.AI_MODEL || process.env.OLLAMA_MODEL || process.env.MODEL || 'llama3';
+    return {
+      apiKey: process.env.OLLAMA_API_KEY || 'ollama',
+      baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1',
+      model: purpose === 'embedding' ? (process.env.AI_EMBEDDING_MODEL || 'nomic-embed-text') : modelName,
+      providerName: 'Ollama (Local)',
+    };
+  }
+
   // 1. Check custom override env vars first
   const customKey = process.env.AI_API_KEY || process.env.API_KEY;
   const customBaseUrl = process.env.AI_BASE_URL || process.env.BASE_URL;

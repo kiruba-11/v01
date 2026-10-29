@@ -12,6 +12,10 @@ export function resolveAIConfig(purpose: 'chat' | 'embedding' = 'chat'): AIProvi
   // Explicit provider routing or auto-detection
   let provider: AIProviderType = envProvider;
 
+  if (provider === 'omniroute' && !process.env.OMNIROUTE_API_KEY && process.env.OLLAMA_BASE_URL) {
+    provider = 'ollama';
+  }
+
   if (!provider) {
     if (process.env.OLLAMA_BASE_URL || (envModel && !process.env.OMNIROUTE_API_KEY && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY && !process.env.NVIDIA_API_KEY && !process.env.GEMINI_API_KEY)) {
       provider = 'ollama';
