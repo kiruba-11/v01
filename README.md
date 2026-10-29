@@ -48,6 +48,20 @@ npm run dev:frontend
 
 The application will be available at `http://localhost:3000`.
 
+### AI Provider Configuration
+
+SourcePilot features a universal multi-provider AI architecture. You can configure your preferred AI provider (OmniRoute, Ollama, Anthropic Claude, OpenAI, NVIDIA NIM, Google Gemini, or generic OpenAI-compatible endpoints) in `.env.local`:
+
+- **Ollama (Local LLM)**:
+  ```env
+  AI_PROVIDER=ollama
+  AI_MODEL=llama3.1
+  AI_EMBEDDING_MODEL=nomic-embed-text
+  OLLAMA_BASE_URL=http://localhost:11434/v1
+  OLLAMA_API_KEY=ollama
+  ```
+- **OmniRoute / Cloud Providers**: Set `AI_PROVIDER=omniroute` (or `anthropic`, `openai`, `nvidia`, `gemini`) along with the corresponding API key.
+
 ### Running Tests
 
 ```bash

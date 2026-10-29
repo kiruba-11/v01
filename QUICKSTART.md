@@ -28,7 +28,30 @@ If services aren't running:
 docker-compose up -d
 ```
 
-## Step 2: Start Backend (Terminal 1)
+## Step 2: Configure AI Provider (.env.local)
+
+SourcePilot supports multiple AI providers (OmniRoute, Ollama, Anthropic, OpenAI, NVIDIA, Gemini). 
+
+Edit `.env.local` to select your provider:
+
+- **Option A: Local Ollama (Recommended for local dev)**:
+  ```env
+  AI_PROVIDER=ollama
+  AI_MODEL=llama3.1
+  AI_EMBEDDING_MODEL=nomic-embed-text
+  OLLAMA_BASE_URL=http://localhost:11434/v1
+  OLLAMA_API_KEY=ollama
+  ```
+  *(Make sure Ollama is running (`ollama serve`) and you have pulled models: `ollama pull llama3.1` and `ollama pull nomic-embed-text`)*
+
+- **Option B: OmniRoute / Cloud Providers**:
+  ```env
+  AI_PROVIDER=omniroute
+  OMNIROUTE_API_KEY=your_api_key_here
+  AI_MODEL=auto/best-chat
+  ```
+
+## Step 3: Start Backend (Terminal 1)
 
 ```bash
 npm run dev:backend
@@ -41,7 +64,7 @@ Expected output:
 [32minfo[39m: Server running on port 3001
 ```
 
-## Step 3: Start Frontend (Terminal 2)
+## Step 4: Start Frontend (Terminal 2)
 
 ```bash
 npm run dev:frontend
@@ -54,7 +77,7 @@ Expected output:
   ➜  Local:   http://localhost:3000/
 ```
 
-## Step 4: Access Application
+## Step 5: Access Application
 
 Open browser: **http://localhost:3000**
 
