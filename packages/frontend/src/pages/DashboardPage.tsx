@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuthStore } from '../store/auth';
 import PaintThemeBrush from '../components/PaintThemeBrush';
+import AIStatusBadge from '../components/AIStatusBadge';
 import TiltedCard from '../components/TiltedCard';
 import {
   BookOpen,
@@ -25,7 +26,6 @@ import {
   CheckCircle2,
   Key,
   Shield,
-  Activity,
 } from 'lucide-react';
 
 const NOTEBOOK_TEMPLATES = [
@@ -352,10 +352,7 @@ export default function DashboardPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-tertiary)', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '12px', color: 'var(--text-secondary)' }}>
-              <Activity style={{ width: '13px', height: '13px', color: 'var(--accent-color)' }} />
-              <span>Omniroute AI Active</span>
-            </div>
+            <AIStatusBadge />
             <PaintThemeBrush />
             <button
               onClick={() => setShowCreateModal(true)}

@@ -8,6 +8,7 @@ import ChatPanel from '../components/ChatPanel';
 import StudioPanel from '../components/StudioPanel';
 import NotesPanel from '../components/NotesPanel';
 import PaintThemeBrush from '../components/PaintThemeBrush';
+import AIStatusBadge from '../components/AIStatusBadge';
 import { PanelLeft, PanelRight, PanelLeftClose, PanelRightClose, ArrowLeft, MessageSquare, FileText } from 'lucide-react';
 
 export default function NotebookPage() {
@@ -73,6 +74,7 @@ export default function NotebookPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AIStatusBadge />
           <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: '6px', padding: '2px', border: '1px solid var(--border-color)' }}>
             <button
               type="button"
