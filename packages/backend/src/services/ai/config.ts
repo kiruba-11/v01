@@ -4,13 +4,31 @@ import { createLogger } from '../../utils/logger.js';
 const logger = createLogger('ai-config');
 
 export function resolveAIConfig(purpose: 'chat' | 'embedding' = 'chat'): AIProviderConfig {
-  const provider = (process.env.AI_PROVIDER || 'openai-compatible').toLowerCase() as AIProviderType;
+  const envProvider = (process.env.AI_PROVIDER || '').toLowerCase() as AIProviderType;
   const envModel = purpose === 'embedding'
     ? (process.env.AI_EMBEDDING_MODEL || process.env.EMBEDDING_MODEL)
     : (process.env.AI_MODEL || process.env.MODEL);
 
   const apiKey = process.env.AI_API_KEY || process.env.API_KEY || '';
   const baseUrl = process.env.AI_BASE_URL || process.env.BASE_URL;
+
+  // Determine provider: explicit AI_PROVIDER takes precedence, otherwise auto-detect from keys/env
+  let provider: AIProviderType = envProvider;
+  if (!provider) {
+    if (process.env.ANTHROPIC_API_KEY) {
+      provider = 'anthropic';
+    } else if (process.env.OPENAI_API_KEY) {
+      provider = 'openai';
+    } else if (process.env.NVIDIA_API_KEY) {
+      provider = 'nvidia';
+    } else if (process.env.GEMINI_API_KEY) {
+      provider = 'gemini';
+    } else if (process.env.OLLAMA_BASE_URL || process.env.OLLAMA_MODEL) {
+      provider = 'ollama';
+    } else {
+      provider = 'openai-compatible';
+    }
+  }
 
   switch (provider) {
     case 'ollama':
