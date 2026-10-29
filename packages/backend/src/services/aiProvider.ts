@@ -10,121 +10,99 @@ export interface AIProviderConfig {
 }
 
 /**
-  * Resolves the active AI provider configuration from environment variables.
-  * Supports OmniRoute, Nvidia, Anthropic (Claude), Ollama, OpenAI, DeepSeek, Google (Gemini), Groq, Together, etc.
+  * Resolves the active AI provider configuration strictly from environment variables.
   */
 export function getAIProviderConfig(purpose: 'chat' | 'embedding' | 'vision' = 'chat'): AIProviderConfig {
-  // 0. Check AI_PROVIDER explicitly or Ollama override
   const envProvider = (process.env.AI_PROVIDER || '').toLowerCase();
-  const checkOmniKey = process.env.OMNIROUTE_API_KEY || process.env.OMNI_API_KEY;
 
-  if (envProvider === 'ollama' || (process.env.OLLAMA_BASE_URL && (!checkOmniKey || checkOmniKey.trim() === ''))) {
-    const modelName = process.env.AI_MODEL || process.env.OLLAMA_MODEL || process.env.MODEL || 'llama3';
+  if (envProvider === 'ollama') {
     return {
-      apiKey: process.env.OLLAMA_API_KEY || 'ollama',
-      baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1',
-      model: purpose === 'embedding' ? (process.env.AI_EMBEDDING_MODEL || 'nomic-embed-text') : modelName,
+      apiKey: process.env.OLLAMA_API_KEY || process.env.AI_API_KEY || 'ollama',
+      baseUrl: process.env.OLLAMA_BASE_URL || process.env.AI_BASE_URL || 'http://localhost:11434/v1',
+      model: purpose === 'embedding'
+        ? (process.env.AI_EMBEDDING_MODEL || process.env.OLLAMA_EMBEDDING_MODEL || 'nomic-embed-text')
+        : (process.env.AI_MODEL || process.env.OLLAMA_MODEL || 'llama3'),
       providerName: 'Ollama (Local)',
     };
   }
 
-  // 1. Check custom override env vars first
-  const customKey = process.env.AI_API_KEY || process.env.API_KEY;
-  const customBaseUrl = process.env.AI_BASE_URL || process.env.BASE_URL;
-  const customModel = purpose === 'embedding'
-    ? (process.env.AI_EMBEDDING_MODEL || process.env.EMBEDDING_MODEL)
-    : (process.env.AI_MODEL || process.env.MODEL);
-
-  if (customKey || customBaseUrl || customModel) {
-    const isOllama = (customBaseUrl && customBaseUrl.includes('11434')) || (customModel && !customKey);
+  if (envProvider === 'anthropic') {
     return {
-      apiKey: customKey || (isOllama ? 'ollama-local' : ''),
-      baseUrl: customBaseUrl || (isOllama ? 'http://localhost:11434/v1' : 'https://api.omniroute.ai/v1'),
-      model: customModel || (purpose === 'embedding' ? 'text-embedding-3-small' : 'auto/best-chat'),
-      providerName: 'Custom AI Provider',
-    };
-  }
-
-  // 2. Check Ollama (Local LLM via model name like OLLAMA_MODEL=llama3 or MODEL=deepseek-r1)
-  const ollamaModel = process.env.OLLAMA_MODEL || (process.env.MODEL && !process.env.OMNIROUTE_API_KEY && !process.env.NVIDIA_API_KEY && !process.env.ANTHROPIC_API_KEY && !process.env.OPENAI_API_KEY ? process.env.MODEL : null);
-  if (ollamaModel || (process.env.OLLAMA_BASE_URL)) {
-    const modelName = ollamaModel || 'llama3';
-    return {
-      apiKey: 'ollama',
-      baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1',
-      model: purpose === 'embedding' ? 'nomic-embed-text' : modelName,
-      providerName: 'Ollama (Local)',
-    };
-  }
-
-  // 3. Check Anthropic / Claude
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (anthropicKey && purpose === 'chat') {
-    return {
-      apiKey: anthropicKey,
-      baseUrl: process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com/v1',
-      model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+      apiKey: process.env.ANTHROPIC_API_KEY || process.env.AI_API_KEY || '',
+      baseUrl: process.env.ANTHROPIC_BASE_URL || process.env.AI_BASE_URL || 'https://api.anthropic.com/v1',
+      model: process.env.ANTHROPIC_MODEL || process.env.AI_MODEL || 'claude-3-5-sonnet-20241022',
       providerName: 'Anthropic Claude',
     };
   }
 
-  // 4. Check OpenAI
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (openaiKey) {
+  if (envProvider === 'openai') {
     return {
-      apiKey: openaiKey,
-      baseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+      apiKey: process.env.OPENAI_API_KEY || process.env.AI_API_KEY || '',
+      baseUrl: process.env.OPENAI_BASE_URL || process.env.AI_BASE_URL || 'https://api.openai.com/v1',
       model: purpose === 'embedding'
-        ? (process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small')
-        : (process.env.OPENAI_MODEL || 'gpt-4o'),
+        ? (process.env.OPENAI_EMBEDDING_MODEL || process.env.AI_EMBEDDING_MODEL || 'text-embedding-3-small')
+        : (process.env.OPENAI_MODEL || process.env.AI_MODEL || 'gpt-4o'),
       providerName: 'OpenAI',
     };
   }
 
-  // 5. Check NVIDIA
-  const nvidiaKey = process.env.NVIDIA_API_KEY;
-  if (nvidiaKey) {
+  if (envProvider === 'nvidia') {
     return {
-      apiKey: nvidiaKey,
-      baseUrl: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
-      model: purpose === 'embedding' ? 'nvidia/embed-qa-4' : (process.env.NVIDIA_MODEL || 'nvidia/llama-3.1-nemotron-70b-instruct'),
+      apiKey: process.env.NVIDIA_API_KEY || process.env.AI_API_KEY || '',
+      baseUrl: process.env.NVIDIA_BASE_URL || process.env.AI_BASE_URL || 'https://integrate.api.nvidia.com/v1',
+      model: purpose === 'embedding'
+        ? (process.env.NVIDIA_EMBEDDING_MODEL || process.env.AI_EMBEDDING_MODEL || 'nvidia/embed-qa-4')
+        : (process.env.NVIDIA_MODEL || process.env.AI_MODEL || 'nvidia/llama-3.1-nemotron-70b-instruct'),
       providerName: 'NVIDIA AI',
     };
   }
 
-  // 6. Check Groq / DeepSeek / Together / etc.
-  const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey) {
+  if (envProvider === 'groq') {
     return {
-      apiKey: groqKey,
-      baseUrl: 'https://api.groq.com/openai/v1',
-      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      apiKey: process.env.GROQ_API_KEY || process.env.AI_API_KEY || '',
+      baseUrl: process.env.GROQ_BASE_URL || process.env.AI_BASE_URL || 'https://api.groq.com/openai/v1',
+      model: process.env.GROQ_MODEL || process.env.AI_MODEL || 'llama-3.3-70b-versatile',
       providerName: 'Groq',
     };
   }
 
-  const deepseekKey = process.env.DEEPSEEK_API_KEY;
-  if (deepseekKey) {
+  if (envProvider === 'deepseek') {
     return {
-      apiKey: deepseekKey,
-      baseUrl: 'https://api.deepseek.com/v1',
-      model: 'deepseek-chat',
+      apiKey: process.env.DEEPSEEK_API_KEY || process.env.AI_API_KEY || '',
+      baseUrl: process.env.DEEPSEEK_BASE_URL || process.env.AI_BASE_URL || 'https://api.deepseek.com/v1',
+      model: process.env.DEEPSEEK_MODEL || process.env.AI_MODEL || 'deepseek-chat',
       providerName: 'DeepSeek',
     };
   }
 
-  // 7. Default to OmniRoute / Generic OpenAI compatible
-  const omniKey = process.env.OMNIROUTE_API_KEY || process.env.OMNI_API_KEY;
+  if (envProvider === 'gemini') {
+    return {
+      apiKey: process.env.GEMINI_API_KEY || process.env.AI_API_KEY || '',
+      baseUrl: process.env.GEMINI_BASE_URL || process.env.AI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai',
+      model: purpose === 'embedding'
+        ? (process.env.GEMINI_EMBEDDING_MODEL || process.env.AI_EMBEDDING_MODEL || 'text-embedding-004')
+        : (process.env.GEMINI_MODEL || process.env.AI_MODEL || 'gemini-1.5-pro'),
+      providerName: 'Google Gemini',
+    };
+  }
+
+  // Fallback to OmniRoute / Generic OpenAI compatible configured via environment
+  const omniKey = process.env.OMNIROUTE_API_KEY || process.env.OMNI_API_KEY || process.env.AI_API_KEY || '';
+  const omniBaseUrl = process.env.OMNIROUTE_BASE_URL || process.env.AI_BASE_URL || 'https://api.omniroute.ai/v1';
+  const omniModel = purpose === 'embedding'
+    ? (process.env.AI_EMBEDDING_MODEL || 'openai/text-embedding-3-small')
+    : (process.env.AI_MODEL || process.env.OMNIROUTE_MODEL || 'auto/best-chat');
+
   return {
-    apiKey: omniKey || '',
-    baseUrl: process.env.OMNIROUTE_BASE_URL || 'https://api.omniroute.ai/v1',
-    model: purpose === 'embedding' ? 'text-embedding-3-small' : (process.env.OMNIROUTE_MODEL || 'auto/best-chat'),
-    providerName: omniKey ? 'OmniRoute' : 'Default / Unauthenticated',
+    apiKey: omniKey,
+    baseUrl: omniBaseUrl,
+    model: omniModel,
+    providerName: envProvider ? `Custom (${envProvider})` : (omniKey ? 'OmniRoute' : 'Default / Unauthenticated'),
   };
 }
 
 /**
- * Universal chat completion request helper supporting any configured AI provider (OmniRoute, Anthropic, OpenAI, NVIDIA, Ollama, Groq, DeepSeek, etc.)
+ * Universal chat completion request helper supporting any configured AI provider strictly via environment settings.
  */
 export async function callAICompletion(messages: Array<{ role: string; content: string }>, options: { temperature?: number; maxTokens?: number } = {}) {
   const config = getAIProviderConfig('chat');
