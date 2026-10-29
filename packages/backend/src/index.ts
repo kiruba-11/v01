@@ -6,17 +6,33 @@ import rateLimit from 'express-rate-limit';
 import { config } from 'dotenv';
 import path from 'path';
 
-// Load environment variables - try multiple paths
-const rootDir = path.resolve(process.cwd(), '../../.env.local');
-const localDir = path.resolve(process.cwd(), '.env.local');
-const defaultEnv = path.resolve(process.cwd(), '../../.env');
+import { fileURLToPath } from 'url';
 
-console.log('Loading environment from:', rootDir);
-config({ path: rootDir });
-config({ path: localDir });
-config({ path: defaultEnv });
-config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+// Load environment variables - try all possible locations for .env.local and .env
+const envPaths = [
+  path.resolve(process.cwd(), '.env.local'),
+  path.resolve(process.cwd(), '../../.env.local'),
+  path.resolve(__dirname, '../../../.env.local'),
+  path.resolve(__dirname, '../../../../.env.local'),
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '../../.env'),
+  path.resolve(__dirname, '../../../.env'),
+];
+
+for (const envPath of envPaths) {
+  const result = config({ path: envPath });
+  if (!result.error) {
+    console.log(`✅ Loaded env from: ${envPath}`);
+  }
+}
+config(); // fallback
+
+console.log('AI_PROVIDER:', process.env.AI_PROVIDER || 'not set');
+console.log('AI_MODEL:', process.env.AI_MODEL || 'not set');
+console.log('OLLAMA_BASE_URL:', process.env.OLLAMA_BASE_URL || 'not set');
 console.log('DATABASE_URL:', process.env.DATABASE_URL ? '✅ Set' : '❌ Not set');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', process.env.PORT);
