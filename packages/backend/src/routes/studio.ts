@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { getPool } from '../db/init.js';
 import { createLogger } from '../utils/logger.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { getAIProviderConfig } from '../services/aiProvider.js';
 
 const router = Router({ mergeParams: true });
 const logger = createLogger('studio');
@@ -44,9 +45,10 @@ router.post('/generate', authenticateToken, async (req: Request, res: Response) 
         .map((r, i) => `[Source ${i + 1}: ${r.file_name}]\n${r.content}`)
         .join('\n\n');
 
-      const apiKey = process.env.OMNIROUTE_API_KEY || process.env.NVIDIA_API_KEY;
-      const baseUrl = process.env.OMNIROUTE_BASE_URL || (process.env.OMNIROUTE_API_KEY ? 'https://api.omniroute.ai/v1' : 'https://integrate.api.nvidia.com/v1');
-      const model = process.env.OMNIROUTE_API_KEY ? 'auto/best-chat' : 'nvidia/llama-3.1-nemotron-70b-instruct';
+      const aiConfig = getAIProviderConfig('chat');
+      const apiKey = aiConfig.apiKey;
+      const baseUrl = aiConfig.baseUrl;
+      const model = aiConfig.model;
 
       let prompt = '';
       let titleSuffix = '';
